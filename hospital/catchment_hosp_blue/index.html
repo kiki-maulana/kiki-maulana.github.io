@@ -1,0 +1,1593 @@
+<!doctype html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge">
+        <meta name="viewport" content="initial-scale=1,user-scalable=no,maximum-scale=1,width=device-width">
+        <meta name="mobile-web-app-capable" content="yes">
+        <meta name="apple-mobile-web-app-capable" content="yes">
+        <link rel="stylesheet" href="css/leaflet.css">
+        <link rel="stylesheet" href="css/L.Control.Layers.Tree.css">
+        <link rel="stylesheet" href="css/qgis2web.css">
+        <link rel="stylesheet" href="css/fontawesome-all.min.css">
+        <link rel="stylesheet" href="css/leaflet-search.css">
+        <link rel="stylesheet" href="css/filter.css">
+<link rel="stylesheet" href="css/nouislider.min.css">
+        <link rel="stylesheet" href="css/leaflet-measure.css">
+        <style>
+        html, body, #map {
+            width: 100%;
+            height: 100%;
+            padding: 0;
+            margin: 0;
+        }
+        </style>
+        <title></title>
+    </head>
+    <body>
+        <div id="map">
+        </div>
+        <script src="js/qgis2web_expressions.js"></script>
+        <script src="js/leaflet.js"></script>
+        <script src="js/L.Control.Layers.Tree.min.js"></script>
+        <script src="js/leaflet.rotatedMarker.js"></script>
+        <script src="js/leaflet.pattern.js"></script>
+        <script src="js/leaflet-hash.js"></script>
+        <script src="js/Autolinker.min.js"></script>
+        <script src="js/rbush.min.js"></script>
+        <script src="js/labelgun.min.js"></script>
+        <script src="js/labels.js"></script>
+        <script src="js/leaflet-measure.js"></script>
+        <script src="js/leaflet-search.js"></script>
+        <script src="js/tailDT.js"></script>
+<script src="js/nouislider.min.js"></script>
+<script src="js/wNumb.js"></script>
+        <script src="data/Catchment_1.js"></script>
+        <script src="data/Hospitals_2.js"></script>
+        <script>
+        var highlightLayer;
+        function highlightFeature(e) {
+            highlightLayer = e.target;
+
+            if (e.target.feature.geometry.type === 'LineString' || e.target.feature.geometry.type === 'MultiLineString') {
+              highlightLayer.setStyle({
+                color: '#ffff00',
+              });
+            } else {
+              highlightLayer.setStyle({
+                fillColor: '#ffff00',
+                fillOpacity: 1
+              });
+            }
+            highlightLayer.openPopup();
+        }
+        var map = L.map('map', {
+            zoomControl:false, maxZoom:28, minZoom:3
+        }).fitBounds([[-41.465971266094684,111.98483421033319],[-8.735745816214322,160.59495340948177]]);
+        var hash = new L.Hash(map);
+        map.attributionControl.setPrefix('<a href="https://github.com/tomchadwin/qgis2web" target="_blank">qgis2web</a> &middot; <a href="https://leafletjs.com" title="A JS library for interactive maps">Leaflet</a> &middot; <a href="https://qgis.org">QGIS</a>');
+        var autolinker = new Autolinker({truncate: {length: 30, location: 'smart'}});
+        // remove popup's row if "visible-with-data"
+        function removeEmptyRowsFromPopupContent(content, feature) {
+         var tempDiv = document.createElement('div');
+         tempDiv.innerHTML = content;
+         var rows = tempDiv.querySelectorAll('tr');
+         for (var i = 0; i < rows.length; i++) {
+             var td = rows[i].querySelector('td.visible-with-data');
+             var key = td ? td.id : '';
+             if (td && td.classList.contains('visible-with-data') && feature.properties[key] == null) {
+                 rows[i].parentNode.removeChild(rows[i]);
+             }
+         }
+         return tempDiv.innerHTML;
+        }
+        // add class to format popup if it contains media
+		function addClassToPopupIfMedia(content, popup) {
+			var tempDiv = document.createElement('div');
+			tempDiv.innerHTML = content;
+			if (tempDiv.querySelector('td img')) {
+				popup._contentNode.classList.add('media');
+					// Delay to force the redraw
+					setTimeout(function() {
+						popup.update();
+					}, 10);
+			} else {
+				popup._contentNode.classList.remove('media');
+			}
+		}
+        var zoomControl = L.control.zoom({
+            position: 'topleft'
+        }).addTo(map);
+        var measureControl = new L.Control.Measure({
+            position: 'topleft',
+            primaryLengthUnit: 'feet',
+            secondaryLengthUnit: 'miles',
+            primaryAreaUnit: 'sqfeet',
+            secondaryAreaUnit: 'sqmiles'
+        });
+        measureControl.addTo(map);
+        document.getElementsByClassName('leaflet-control-measure-toggle')[0].innerHTML = '';
+        document.getElementsByClassName('leaflet-control-measure-toggle')[0].className += ' fas fa-ruler';
+        var bounds_group = new L.featureGroup([]);
+        function setBounds() {
+        }
+        map.createPane('pane_lightcarto_0');
+        map.getPane('pane_lightcarto_0').style.zIndex = 400;
+        var layer_lightcarto_0 = L.tileLayer('https://a.basemaps.cartocdn.com/light_nolabels/{z}/{x}/{y}@2x.png', {
+            pane: 'pane_lightcarto_0',
+            opacity: 1.0,
+            attribution: '',
+            minZoom: 3,
+            maxZoom: 28,
+            minNativeZoom: 0,
+            maxNativeZoom: 18
+        });
+        layer_lightcarto_0;
+        map.addLayer(layer_lightcarto_0);
+        function pop_Catchment_1(feature, layer) {
+            layer.on({
+                mouseout: function(e) {
+                    for (var i in e.target._eventParents) {
+                        if (typeof e.target._eventParents[i].resetStyle === 'function') {
+                            e.target._eventParents[i].resetStyle(e.target);
+                        }
+                    }
+                    if (typeof layer.closePopup == 'function') {
+                        layer.closePopup();
+                    } else {
+                        layer.eachLayer(function(feature){
+                            feature.closePopup()
+                        });
+                    }
+                },
+                mouseover: highlightFeature,
+            });
+            var popupContent = '<table>\
+                    <tr>\
+                        <th scope="row">hosp_name</th>\
+                        <td class="visible-with-data" id="hosp_name">' + (feature.properties['hosp_name'] !== null ? autolinker.link(feature.properties['hosp_name'].toLocaleString()) : '') + '</td>\
+                    </tr>\
+                </table>';
+            var content = removeEmptyRowsFromPopupContent(popupContent, feature);
+			layer.on('popupopen', function(e) {
+				addClassToPopupIfMedia(content, e.popup);
+			});
+			layer.bindPopup(content, { maxHeight: 400 });
+        }
+
+        function style_Catchment_1_0(feature) {
+            switch(String(feature.properties['hosp_name'])) {
+                case 'Alice Springs Hospital':
+                    return {
+                pane: 'pane_Catchment_1',
+                opacity: 1,
+                color: 'rgba(48,18,59,1.0)',
+                dashArray: '',
+                lineCap: 'square',
+                lineJoin: 'bevel',
+                weight: 1.0,
+                fillOpacity: 0,
+                interactive: true,
+            }
+                    break;
+                case 'Austin Hospital [Heidelberg]':
+                    return {
+                pane: 'pane_Catchment_1',
+                opacity: 1,
+                color: 'rgba(56,38,106,1.0)',
+                dashArray: '',
+                lineCap: 'square',
+                lineJoin: 'bevel',
+                weight: 1.0,
+                fillOpacity: 0,
+                interactive: true,
+            }
+                    break;
+                case 'Bankstown Lidcombe Hospital':
+                    return {
+                pane: 'pane_Catchment_1',
+                opacity: 1,
+                color: 'rgba(62,56,146,1.0)',
+                dashArray: '',
+                lineCap: 'square',
+                lineJoin: 'bevel',
+                weight: 1.0,
+                fillOpacity: 0,
+                interactive: true,
+            }
+                    break;
+                case 'Concord Repatriation Hospital':
+                    return {
+                pane: 'pane_Catchment_1',
+                opacity: 1,
+                color: 'rgba(66,74,180,1.0)',
+                dashArray: '',
+                lineCap: 'square',
+                lineJoin: 'bevel',
+                weight: 1.0,
+                fillOpacity: 0,
+                interactive: true,
+            }
+                    break;
+                case 'Dandenong Hospital':
+                    return {
+                pane: 'pane_Catchment_1',
+                opacity: 1,
+                color: 'rgba(69,93,208,1.0)',
+                dashArray: '',
+                lineCap: 'square',
+                lineJoin: 'bevel',
+                weight: 1.0,
+                fillOpacity: 0,
+                interactive: true,
+            }
+                    break;
+                case 'Fiona Stanley Hospital':
+                    return {
+                pane: 'pane_Catchment_1',
+                opacity: 1,
+                color: 'rgba(71,109,229,1.0)',
+                dashArray: '',
+                lineCap: 'square',
+                lineJoin: 'bevel',
+                weight: 1.0,
+                fillOpacity: 0,
+                interactive: true,
+            }
+                    break;
+                case 'Flinders Medical Centre':
+                    return {
+                pane: 'pane_Catchment_1',
+                opacity: 1,
+                color: 'rgba(70,126,245,1.0)',
+                dashArray: '',
+                lineCap: 'square',
+                lineJoin: 'bevel',
+                weight: 1.0,
+                fillOpacity: 0,
+                interactive: true,
+            }
+                    break;
+                case 'Gold Coast University Hospital':
+                    return {
+                pane: 'pane_Catchment_1',
+                opacity: 1,
+                color: 'rgba(68,143,254,1.0)',
+                dashArray: '',
+                lineCap: 'square',
+                lineJoin: 'bevel',
+                weight: 1.0,
+                fillOpacity: 0,
+                interactive: true,
+            }
+                    break;
+                case 'John Hunter Hospital':
+                    return {
+                pane: 'pane_Catchment_1',
+                opacity: 1,
+                color: 'rgba(60,159,253,1.0)',
+                dashArray: '',
+                lineCap: 'square',
+                lineJoin: 'bevel',
+                weight: 1.0,
+                fillOpacity: 0,
+                interactive: true,
+            }
+                    break;
+                case 'Liverpool Hospital':
+                    return {
+                pane: 'pane_Catchment_1',
+                opacity: 1,
+                color: 'rgba(49,175,245,1.0)',
+                dashArray: '',
+                lineCap: 'square',
+                lineJoin: 'bevel',
+                weight: 1.0,
+                fillOpacity: 0,
+                interactive: true,
+            }
+                    break;
+                case 'Lyell McEwin Hospital':
+                    return {
+                pane: 'pane_Catchment_1',
+                opacity: 1,
+                color: 'rgba(38,191,232,1.0)',
+                dashArray: '',
+                lineCap: 'square',
+                lineJoin: 'bevel',
+                weight: 1.0,
+                fillOpacity: 0,
+                interactive: true,
+            }
+                    break;
+                case 'Monash Medical Centre [Clayton]':
+                    return {
+                pane: 'pane_Catchment_1',
+                opacity: 1,
+                color: 'rgba(28,206,215,1.0)',
+                dashArray: '',
+                lineCap: 'square',
+                lineJoin: 'bevel',
+                weight: 1.0,
+                fillOpacity: 0,
+                interactive: true,
+            }
+                    break;
+                case 'Nepean Hospital':
+                    return {
+                pane: 'pane_Catchment_1',
+                opacity: 1,
+                color: 'rgba(24,219,198,1.0)',
+                dashArray: '',
+                lineCap: 'square',
+                lineJoin: 'bevel',
+                weight: 1.0,
+                fillOpacity: 0,
+                interactive: true,
+            }
+                    break;
+                case 'Perth Children\'s Hospital':
+                    return {
+                pane: 'pane_Catchment_1',
+                opacity: 1,
+                color: 'rgba(27,229,181,1.0)',
+                dashArray: '',
+                lineCap: 'square',
+                lineJoin: 'bevel',
+                weight: 1.0,
+                fillOpacity: 0,
+                interactive: true,
+            }
+                    break;
+                case 'Prince of Wales Hospital':
+                    return {
+                pane: 'pane_Catchment_1',
+                opacity: 1,
+                color: 'rgba(39,238,164,1.0)',
+                dashArray: '',
+                lineCap: 'square',
+                lineJoin: 'bevel',
+                weight: 1.0,
+                fillOpacity: 0,
+                interactive: true,
+            }
+                    break;
+                case 'Princess Alexandra Hospital':
+                    return {
+                pane: 'pane_Catchment_1',
+                opacity: 1,
+                color: 'rgba(58,244,144,1.0)',
+                dashArray: '',
+                lineCap: 'square',
+                lineJoin: 'bevel',
+                weight: 1.0,
+                fillOpacity: 0,
+                interactive: true,
+            }
+                    break;
+                case 'Queensland Children\'s Hospital':
+                    return {
+                pane: 'pane_Catchment_1',
+                opacity: 1,
+                color: 'rgba(82,250,122,1.0)',
+                dashArray: '',
+                lineCap: 'square',
+                lineJoin: 'bevel',
+                weight: 1.0,
+                fillOpacity: 0,
+                interactive: true,
+            }
+                    break;
+                case 'Royal Adelaide Hospital':
+                    return {
+                pane: 'pane_Catchment_1',
+                opacity: 1,
+                color: 'rgba(107,254,100,1.0)',
+                dashArray: '',
+                lineCap: 'square',
+                lineJoin: 'bevel',
+                weight: 1.0,
+                fillOpacity: 0,
+                interactive: true,
+            }
+                    break;
+                case 'Royal Brisbane & Women\'s Hospital':
+                    return {
+                pane: 'pane_Catchment_1',
+                opacity: 1,
+                color: 'rgba(133,255,81,1.0)',
+                dashArray: '',
+                lineCap: 'square',
+                lineJoin: 'bevel',
+                weight: 1.0,
+                fillOpacity: 0,
+                interactive: true,
+            }
+                    break;
+                case 'Royal Children\'s Hospital [Parkville]':
+                    return {
+                pane: 'pane_Catchment_1',
+                opacity: 1,
+                color: 'rgba(155,254,65,1.0)',
+                dashArray: '',
+                lineCap: 'square',
+                lineJoin: 'bevel',
+                weight: 1.0,
+                fillOpacity: 0,
+                interactive: true,
+            }
+                    break;
+                case 'Royal Darwin Hospital':
+                    return {
+                pane: 'pane_Catchment_1',
+                opacity: 1,
+                color: 'rgba(173,251,56,1.0)',
+                dashArray: '',
+                lineCap: 'square',
+                lineJoin: 'bevel',
+                weight: 1.0,
+                fillOpacity: 0,
+                interactive: true,
+            }
+                    break;
+                case 'Royal Hobart Hospital':
+                    return {
+                pane: 'pane_Catchment_1',
+                opacity: 1,
+                color: 'rgba(190,244,52,1.0)',
+                dashArray: '',
+                lineCap: 'square',
+                lineJoin: 'bevel',
+                weight: 1.0,
+                fillOpacity: 0,
+                interactive: true,
+            }
+                    break;
+                case 'Royal Melbourne Hospital [City Campus]':
+                    return {
+                pane: 'pane_Catchment_1',
+                opacity: 1,
+                color: 'rgba(206,235,52,1.0)',
+                dashArray: '',
+                lineCap: 'square',
+                lineJoin: 'bevel',
+                weight: 1.0,
+                fillOpacity: 0,
+                interactive: true,
+            }
+                    break;
+                case 'Royal North Shore Hospital':
+                    return {
+                pane: 'pane_Catchment_1',
+                opacity: 1,
+                color: 'rgba(221,224,55,1.0)',
+                dashArray: '',
+                lineCap: 'square',
+                lineJoin: 'bevel',
+                weight: 1.0,
+                fillOpacity: 0,
+                interactive: true,
+            }
+                    break;
+                case 'Royal Prince Alfred Hospital':
+                    return {
+                pane: 'pane_Catchment_1',
+                opacity: 1,
+                color: 'rgba(234,212,57,1.0)',
+                dashArray: '',
+                lineCap: 'square',
+                lineJoin: 'bevel',
+                weight: 1.0,
+                fillOpacity: 0,
+                interactive: true,
+            }
+                    break;
+                case 'Sir Charles Gairdner Hospital':
+                    return {
+                pane: 'pane_Catchment_1',
+                opacity: 1,
+                color: 'rgba(244,199,58,1.0)',
+                dashArray: '',
+                lineCap: 'square',
+                lineJoin: 'bevel',
+                weight: 1.0,
+                fillOpacity: 0,
+                interactive: true,
+            }
+                    break;
+                case 'St George Hospital NSW':
+                    return {
+                pane: 'pane_Catchment_1',
+                opacity: 1,
+                color: 'rgba(251,185,56,1.0)',
+                dashArray: '',
+                lineCap: 'square',
+                lineJoin: 'bevel',
+                weight: 1.0,
+                fillOpacity: 0,
+                interactive: true,
+            }
+                    break;
+                case 'St Vincent\'s Hospital [Darlinghurst]':
+                    return {
+                pane: 'pane_Catchment_1',
+                opacity: 1,
+                color: 'rgba(254,169,51,1.0)',
+                dashArray: '',
+                lineCap: 'square',
+                lineJoin: 'bevel',
+                weight: 1.0,
+                fillOpacity: 0,
+                interactive: true,
+            }
+                    break;
+                case 'St Vincent\'s Hospital [Melbourne]':
+                    return {
+                pane: 'pane_Catchment_1',
+                opacity: 1,
+                color: 'rgba(254,151,43,1.0)',
+                dashArray: '',
+                lineCap: 'square',
+                lineJoin: 'bevel',
+                weight: 1.0,
+                fillOpacity: 0,
+                interactive: true,
+            }
+                    break;
+                case 'Sunshine Hospital':
+                    return {
+                pane: 'pane_Catchment_1',
+                opacity: 1,
+                color: 'rgba(252,131,35,1.0)',
+                dashArray: '',
+                lineCap: 'square',
+                lineJoin: 'bevel',
+                weight: 1.0,
+                fillOpacity: 0,
+                interactive: true,
+            }
+                    break;
+                case 'Sydney Children\'s Hospital':
+                    return {
+                pane: 'pane_Catchment_1',
+                opacity: 1,
+                color: 'rgba(247,111,26,1.0)',
+                dashArray: '',
+                lineCap: 'square',
+                lineJoin: 'bevel',
+                weight: 1.0,
+                fillOpacity: 0,
+                interactive: true,
+            }
+                    break;
+                case 'The Alfred':
+                    return {
+                pane: 'pane_Catchment_1',
+                opacity: 1,
+                color: 'rgba(241,92,19,1.0)',
+                dashArray: '',
+                lineCap: 'square',
+                lineJoin: 'bevel',
+                weight: 1.0,
+                fillOpacity: 0,
+                interactive: true,
+            }
+                    break;
+                case 'The Canberra Hospital':
+                    return {
+                pane: 'pane_Catchment_1',
+                opacity: 1,
+                color: 'rgba(232,75,12,1.0)',
+                dashArray: '',
+                lineCap: 'square',
+                lineJoin: 'bevel',
+                weight: 1.0,
+                fillOpacity: 0,
+                interactive: true,
+            }
+                    break;
+                case 'The Children\'s Hospital at Westmead':
+                    return {
+                pane: 'pane_Catchment_1',
+                opacity: 1,
+                color: 'rgba(222,62,8,1.0)',
+                dashArray: '',
+                lineCap: 'square',
+                lineJoin: 'bevel',
+                weight: 1.0,
+                fillOpacity: 0,
+                interactive: true,
+            }
+                    break;
+                case 'Townsville University Hospital':
+                    return {
+                pane: 'pane_Catchment_1',
+                opacity: 1,
+                color: 'rgba(210,49,5,1.0)',
+                dashArray: '',
+                lineCap: 'square',
+                lineJoin: 'bevel',
+                weight: 1.0,
+                fillOpacity: 0,
+                interactive: true,
+            }
+                    break;
+                case 'University Hospital Geelong':
+                    return {
+                pane: 'pane_Catchment_1',
+                opacity: 1,
+                color: 'rgba(196,37,3,1.0)',
+                dashArray: '',
+                lineCap: 'square',
+                lineJoin: 'bevel',
+                weight: 1.0,
+                fillOpacity: 0,
+                interactive: true,
+            }
+                    break;
+                case 'Westmead Hospital':
+                    return {
+                pane: 'pane_Catchment_1',
+                opacity: 1,
+                color: 'rgba(179,27,1,1.0)',
+                dashArray: '',
+                lineCap: 'square',
+                lineJoin: 'bevel',
+                weight: 1.0,
+                fillOpacity: 0,
+                interactive: true,
+            }
+                    break;
+                case 'Wollongong Hospital':
+                    return {
+                pane: 'pane_Catchment_1',
+                opacity: 1,
+                color: 'rgba(161,18,1,1.0)',
+                dashArray: '',
+                lineCap: 'square',
+                lineJoin: 'bevel',
+                weight: 1.0,
+                fillOpacity: 0,
+                interactive: true,
+            }
+                    break;
+                case 'Women\'s and Children\'s Hospital':
+                    return {
+                pane: 'pane_Catchment_1',
+                opacity: 1,
+                color: 'rgba(141,10,1,1.0)',
+                dashArray: '',
+                lineCap: 'square',
+                lineJoin: 'bevel',
+                weight: 1.0,
+                fillOpacity: 0,
+                interactive: true,
+            }
+                    break;
+                default:
+                    return {
+                pane: 'pane_Catchment_1',
+                opacity: 1,
+                color: 'rgba(122,4,3,1.0)',
+                dashArray: '',
+                lineCap: 'square',
+                lineJoin: 'bevel',
+                weight: 1.0,
+                fillOpacity: 0,
+                interactive: true,
+            }
+                    break;
+            }
+        }
+        map.createPane('pane_Catchment_1');
+        map.getPane('pane_Catchment_1').style.zIndex = 401;
+        map.getPane('pane_Catchment_1').style['mix-blend-mode'] = 'normal';
+        var layer_Catchment_1 = new L.geoJson(json_Catchment_1, {
+            attribution: '',
+            interactive: true,
+            dataVar: 'json_Catchment_1',
+            layerName: 'layer_Catchment_1',
+            pane: 'pane_Catchment_1',
+            onEachFeature: pop_Catchment_1,
+            style: style_Catchment_1_0,
+        });
+        bounds_group.addLayer(layer_Catchment_1);
+        map.addLayer(layer_Catchment_1);
+        function pop_Hospitals_2(feature, layer) {
+            layer.on({
+                mouseout: function(e) {
+                    for (var i in e.target._eventParents) {
+                        if (typeof e.target._eventParents[i].resetStyle === 'function') {
+                            e.target._eventParents[i].resetStyle(e.target);
+                        }
+                    }
+                    if (typeof layer.closePopup == 'function') {
+                        layer.closePopup();
+                    } else {
+                        layer.eachLayer(function(feature){
+                            feature.closePopup()
+                        });
+                    }
+                },
+                mouseover: highlightFeature,
+            });
+            var popupContent = '<table>\
+                    <tr>\
+                        <th scope="row">hosp_name</th>\
+                        <td class="visible-with-data" id="hosp_name">' + (feature.properties['hosp_name'] !== null ? autolinker.link(feature.properties['hosp_name'].toLocaleString()) : '') + '</td>\
+                    </tr>\
+                </table>';
+            var content = removeEmptyRowsFromPopupContent(popupContent, feature);
+			layer.on('popupopen', function(e) {
+				addClassToPopupIfMedia(content, e.popup);
+			});
+			layer.bindPopup(content, { maxHeight: 400 });
+        }
+
+        function style_Hospitals_2_0(feature) {
+            switch(String(feature.properties['hosp_name'])) {
+                case 'Alice Springs Hospital':
+                    return {
+                pane: 'pane_Hospitals_2',
+                radius: 4.0,
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1,
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(48,18,59,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'Austin Hospital [Heidelberg]':
+                    return {
+                pane: 'pane_Hospitals_2',
+                radius: 4.0,
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1,
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(56,38,106,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'Bankstown Lidcombe Hospital':
+                    return {
+                pane: 'pane_Hospitals_2',
+                radius: 4.0,
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1,
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(62,56,146,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'Concord Repatriation Hospital':
+                    return {
+                pane: 'pane_Hospitals_2',
+                radius: 4.0,
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1,
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(66,74,180,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'Dandenong Hospital':
+                    return {
+                pane: 'pane_Hospitals_2',
+                radius: 4.0,
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1,
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(69,93,208,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'Fiona Stanley Hospital':
+                    return {
+                pane: 'pane_Hospitals_2',
+                radius: 4.0,
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1,
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(71,109,229,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'Flinders Medical Centre':
+                    return {
+                pane: 'pane_Hospitals_2',
+                radius: 4.0,
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1,
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(70,126,245,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'Gold Coast University Hospital':
+                    return {
+                pane: 'pane_Hospitals_2',
+                radius: 4.0,
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1,
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(68,143,254,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'John Hunter Hospital':
+                    return {
+                pane: 'pane_Hospitals_2',
+                radius: 4.0,
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1,
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(60,159,253,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'Liverpool Hospital':
+                    return {
+                pane: 'pane_Hospitals_2',
+                radius: 4.0,
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1,
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(49,175,245,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'Lyell McEwin Hospital':
+                    return {
+                pane: 'pane_Hospitals_2',
+                radius: 4.0,
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1,
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(38,191,232,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'Monash Medical Centre [Clayton]':
+                    return {
+                pane: 'pane_Hospitals_2',
+                radius: 4.0,
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1,
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(28,206,215,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'Nepean Hospital':
+                    return {
+                pane: 'pane_Hospitals_2',
+                radius: 4.0,
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1,
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(24,219,198,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'Perth Children\'s Hospital':
+                    return {
+                pane: 'pane_Hospitals_2',
+                radius: 4.0,
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1,
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(27,229,181,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'Prince of Wales Hospital':
+                    return {
+                pane: 'pane_Hospitals_2',
+                radius: 4.0,
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1,
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(39,238,164,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'Princess Alexandra Hospital':
+                    return {
+                pane: 'pane_Hospitals_2',
+                radius: 4.0,
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1,
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(58,244,144,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'Queensland Children\'s Hospital':
+                    return {
+                pane: 'pane_Hospitals_2',
+                radius: 4.0,
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1,
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(82,250,122,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'Royal Adelaide Hospital':
+                    return {
+                pane: 'pane_Hospitals_2',
+                radius: 4.0,
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1,
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(107,254,100,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'Royal Brisbane & Women\'s Hospital':
+                    return {
+                pane: 'pane_Hospitals_2',
+                radius: 4.0,
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1,
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(133,255,81,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'Royal Children\'s Hospital [Parkville]':
+                    return {
+                pane: 'pane_Hospitals_2',
+                radius: 4.0,
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1,
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(155,254,65,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'Royal Darwin Hospital':
+                    return {
+                pane: 'pane_Hospitals_2',
+                radius: 4.0,
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1,
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(173,251,56,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'Royal Hobart Hospital':
+                    return {
+                pane: 'pane_Hospitals_2',
+                radius: 4.0,
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1,
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(190,244,52,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'Royal Melbourne Hospital [City Campus]':
+                    return {
+                pane: 'pane_Hospitals_2',
+                radius: 4.0,
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1,
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(206,235,52,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'Royal North Shore Hospital':
+                    return {
+                pane: 'pane_Hospitals_2',
+                radius: 4.0,
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1,
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(221,224,55,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'Royal Prince Alfred Hospital':
+                    return {
+                pane: 'pane_Hospitals_2',
+                radius: 4.0,
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1,
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(234,212,57,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'Sir Charles Gairdner Hospital':
+                    return {
+                pane: 'pane_Hospitals_2',
+                radius: 4.0,
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1,
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(244,199,58,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'St George Hospital NSW':
+                    return {
+                pane: 'pane_Hospitals_2',
+                radius: 4.0,
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1,
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(251,185,56,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'St Vincent\'s Hospital [Darlinghurst]':
+                    return {
+                pane: 'pane_Hospitals_2',
+                radius: 4.0,
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1,
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(254,169,51,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'St Vincent\'s Hospital [Melbourne]':
+                    return {
+                pane: 'pane_Hospitals_2',
+                radius: 4.0,
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1,
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(254,151,43,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'Sunshine Hospital':
+                    return {
+                pane: 'pane_Hospitals_2',
+                radius: 4.0,
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1,
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(252,131,35,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'Sydney Children\'s Hospital':
+                    return {
+                pane: 'pane_Hospitals_2',
+                radius: 4.0,
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1,
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(247,111,26,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'The Alfred':
+                    return {
+                pane: 'pane_Hospitals_2',
+                radius: 4.0,
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1,
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(241,92,19,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'The Canberra Hospital':
+                    return {
+                pane: 'pane_Hospitals_2',
+                radius: 4.0,
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1,
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(232,75,12,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'The Children\'s Hospital at Westmead':
+                    return {
+                pane: 'pane_Hospitals_2',
+                radius: 4.0,
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1,
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(222,62,8,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'Townsville University Hospital':
+                    return {
+                pane: 'pane_Hospitals_2',
+                radius: 4.0,
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1,
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(210,49,5,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'University Hospital Geelong':
+                    return {
+                pane: 'pane_Hospitals_2',
+                radius: 4.0,
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1,
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(196,37,3,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'Westmead Hospital':
+                    return {
+                pane: 'pane_Hospitals_2',
+                radius: 4.0,
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1,
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(179,27,1,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'Wollongong Hospital':
+                    return {
+                pane: 'pane_Hospitals_2',
+                radius: 4.0,
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1,
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(161,18,1,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'Women\'s and Children\'s Hospital':
+                    return {
+                pane: 'pane_Hospitals_2',
+                radius: 4.0,
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1,
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(141,10,1,1.0)',
+                interactive: true,
+            }
+                    break;
+                default:
+                    return {
+                pane: 'pane_Hospitals_2',
+                radius: 4.0,
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1,
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(122,4,3,1.0)',
+                interactive: true,
+            }
+                    break;
+            }
+        }
+        map.createPane('pane_Hospitals_2');
+        map.getPane('pane_Hospitals_2').style.zIndex = 402;
+        map.getPane('pane_Hospitals_2').style['mix-blend-mode'] = 'normal';
+        var layer_Hospitals_2 = new L.geoJson(json_Hospitals_2, {
+            attribution: '',
+            interactive: true,
+            dataVar: 'json_Hospitals_2',
+            layerName: 'layer_Hospitals_2',
+            pane: 'pane_Hospitals_2',
+            onEachFeature: pop_Hospitals_2,
+            pointToLayer: function (feature, latlng) {
+                var context = {
+                    feature: feature,
+                    variables: {}
+                };
+                return L.circleMarker(latlng, style_Hospitals_2_0(feature));
+            },
+        });
+        bounds_group.addLayer(layer_Hospitals_2);
+        map.addLayer(layer_Hospitals_2);
+        var baseMaps = {};
+        var overlaysTree = [
+            {label: 'Hospitals<br /><table><tr><td style="text-align: center;"><img src="legend/Hospitals_2_AliceSpringsHospital0.png" /></td><td>Alice Springs Hospital</td></tr><tr><td style="text-align: center;"><img src="legend/Hospitals_2_AustinHospitalHeidelberg1.png" /></td><td>Austin Hospital [Heidelberg]</td></tr><tr><td style="text-align: center;"><img src="legend/Hospitals_2_BankstownLidcombeHospital2.png" /></td><td>Bankstown Lidcombe Hospital</td></tr><tr><td style="text-align: center;"><img src="legend/Hospitals_2_ConcordRepatriationHospital3.png" /></td><td>Concord Repatriation Hospital</td></tr><tr><td style="text-align: center;"><img src="legend/Hospitals_2_DandenongHospital4.png" /></td><td>Dandenong Hospital</td></tr><tr><td style="text-align: center;"><img src="legend/Hospitals_2_FionaStanleyHospital5.png" /></td><td>Fiona Stanley Hospital</td></tr><tr><td style="text-align: center;"><img src="legend/Hospitals_2_FlindersMedicalCentre6.png" /></td><td>Flinders Medical Centre</td></tr><tr><td style="text-align: center;"><img src="legend/Hospitals_2_GoldCoastUniversityHospital7.png" /></td><td>Gold Coast University Hospital</td></tr><tr><td style="text-align: center;"><img src="legend/Hospitals_2_JohnHunterHospital8.png" /></td><td>John Hunter Hospital</td></tr><tr><td style="text-align: center;"><img src="legend/Hospitals_2_LiverpoolHospital9.png" /></td><td>Liverpool Hospital</td></tr><tr><td style="text-align: center;"><img src="legend/Hospitals_2_LyellMcEwinHospital10.png" /></td><td>Lyell McEwin Hospital</td></tr><tr><td style="text-align: center;"><img src="legend/Hospitals_2_MonashMedicalCentreClayton11.png" /></td><td>Monash Medical Centre [Clayton]</td></tr><tr><td style="text-align: center;"><img src="legend/Hospitals_2_NepeanHospital12.png" /></td><td>Nepean Hospital</td></tr><tr><td style="text-align: center;"><img src="legend/Hospitals_2_PerthChildrensHospital13.png" /></td><td>Perth Children\'s Hospital</td></tr><tr><td style="text-align: center;"><img src="legend/Hospitals_2_PrinceofWalesHospital14.png" /></td><td>Prince of Wales Hospital</td></tr><tr><td style="text-align: center;"><img src="legend/Hospitals_2_PrincessAlexandraHospital15.png" /></td><td>Princess Alexandra Hospital</td></tr><tr><td style="text-align: center;"><img src="legend/Hospitals_2_QueenslandChildrensHospital16.png" /></td><td>Queensland Children\'s Hospital</td></tr><tr><td style="text-align: center;"><img src="legend/Hospitals_2_RoyalAdelaideHospital17.png" /></td><td>Royal Adelaide Hospital</td></tr><tr><td style="text-align: center;"><img src="legend/Hospitals_2_RoyalBrisbaneWomensHospital18.png" /></td><td>Royal Brisbane & Women\'s Hospital</td></tr><tr><td style="text-align: center;"><img src="legend/Hospitals_2_RoyalChildrensHospitalParkville19.png" /></td><td>Royal Children\'s Hospital [Parkville]</td></tr><tr><td style="text-align: center;"><img src="legend/Hospitals_2_RoyalDarwinHospital20.png" /></td><td>Royal Darwin Hospital</td></tr><tr><td style="text-align: center;"><img src="legend/Hospitals_2_RoyalHobartHospital21.png" /></td><td>Royal Hobart Hospital</td></tr><tr><td style="text-align: center;"><img src="legend/Hospitals_2_RoyalMelbourneHospitalCityCampus22.png" /></td><td>Royal Melbourne Hospital [City Campus]</td></tr><tr><td style="text-align: center;"><img src="legend/Hospitals_2_RoyalNorthShoreHospital23.png" /></td><td>Royal North Shore Hospital</td></tr><tr><td style="text-align: center;"><img src="legend/Hospitals_2_RoyalPrinceAlfredHospital24.png" /></td><td>Royal Prince Alfred Hospital</td></tr><tr><td style="text-align: center;"><img src="legend/Hospitals_2_SirCharlesGairdnerHospital25.png" /></td><td>Sir Charles Gairdner Hospital</td></tr><tr><td style="text-align: center;"><img src="legend/Hospitals_2_StGeorgeHospitalNSW26.png" /></td><td>St George Hospital NSW</td></tr><tr><td style="text-align: center;"><img src="legend/Hospitals_2_StVincentsHospitalDarlinghurst27.png" /></td><td>St Vincent\'s Hospital [Darlinghurst]</td></tr><tr><td style="text-align: center;"><img src="legend/Hospitals_2_StVincentsHospitalMelbourne28.png" /></td><td>St Vincent\'s Hospital [Melbourne]</td></tr><tr><td style="text-align: center;"><img src="legend/Hospitals_2_SunshineHospital29.png" /></td><td>Sunshine Hospital</td></tr><tr><td style="text-align: center;"><img src="legend/Hospitals_2_SydneyChildrensHospital30.png" /></td><td>Sydney Children\'s Hospital</td></tr><tr><td style="text-align: center;"><img src="legend/Hospitals_2_TheAlfred31.png" /></td><td>The Alfred</td></tr><tr><td style="text-align: center;"><img src="legend/Hospitals_2_TheCanberraHospital32.png" /></td><td>The Canberra Hospital</td></tr><tr><td style="text-align: center;"><img src="legend/Hospitals_2_TheChildrensHospitalatWestmead33.png" /></td><td>The Children\'s Hospital at Westmead</td></tr><tr><td style="text-align: center;"><img src="legend/Hospitals_2_TownsvilleUniversityHospital34.png" /></td><td>Townsville University Hospital</td></tr><tr><td style="text-align: center;"><img src="legend/Hospitals_2_UniversityHospitalGeelong35.png" /></td><td>University Hospital Geelong</td></tr><tr><td style="text-align: center;"><img src="legend/Hospitals_2_WestmeadHospital36.png" /></td><td>Westmead Hospital</td></tr><tr><td style="text-align: center;"><img src="legend/Hospitals_2_WollongongHospital37.png" /></td><td>Wollongong Hospital</td></tr><tr><td style="text-align: center;"><img src="legend/Hospitals_2_WomensandChildrensHospital38.png" /></td><td>Women\'s and Children\'s Hospital</td></tr><tr><td style="text-align: center;"><img src="legend/Hospitals_2_39.png" /></td><td></td></tr></table>', layer: layer_Hospitals_2},
+            {label: 'Catchment<br /><table><tr><td style="text-align: center;"><img src="legend/Catchment_1_AliceSpringsHospital0.png" /></td><td>Alice Springs Hospital</td></tr><tr><td style="text-align: center;"><img src="legend/Catchment_1_AustinHospitalHeidelberg1.png" /></td><td>Austin Hospital [Heidelberg]</td></tr><tr><td style="text-align: center;"><img src="legend/Catchment_1_BankstownLidcombeHospital2.png" /></td><td>Bankstown Lidcombe Hospital</td></tr><tr><td style="text-align: center;"><img src="legend/Catchment_1_ConcordRepatriationHospital3.png" /></td><td>Concord Repatriation Hospital</td></tr><tr><td style="text-align: center;"><img src="legend/Catchment_1_DandenongHospital4.png" /></td><td>Dandenong Hospital</td></tr><tr><td style="text-align: center;"><img src="legend/Catchment_1_FionaStanleyHospital5.png" /></td><td>Fiona Stanley Hospital</td></tr><tr><td style="text-align: center;"><img src="legend/Catchment_1_FlindersMedicalCentre6.png" /></td><td>Flinders Medical Centre</td></tr><tr><td style="text-align: center;"><img src="legend/Catchment_1_GoldCoastUniversityHospital7.png" /></td><td>Gold Coast University Hospital</td></tr><tr><td style="text-align: center;"><img src="legend/Catchment_1_JohnHunterHospital8.png" /></td><td>John Hunter Hospital</td></tr><tr><td style="text-align: center;"><img src="legend/Catchment_1_LiverpoolHospital9.png" /></td><td>Liverpool Hospital</td></tr><tr><td style="text-align: center;"><img src="legend/Catchment_1_LyellMcEwinHospital10.png" /></td><td>Lyell McEwin Hospital</td></tr><tr><td style="text-align: center;"><img src="legend/Catchment_1_MonashMedicalCentreClayton11.png" /></td><td>Monash Medical Centre [Clayton]</td></tr><tr><td style="text-align: center;"><img src="legend/Catchment_1_NepeanHospital12.png" /></td><td>Nepean Hospital</td></tr><tr><td style="text-align: center;"><img src="legend/Catchment_1_PerthChildrensHospital13.png" /></td><td>Perth Children\'s Hospital</td></tr><tr><td style="text-align: center;"><img src="legend/Catchment_1_PrinceofWalesHospital14.png" /></td><td>Prince of Wales Hospital</td></tr><tr><td style="text-align: center;"><img src="legend/Catchment_1_PrincessAlexandraHospital15.png" /></td><td>Princess Alexandra Hospital</td></tr><tr><td style="text-align: center;"><img src="legend/Catchment_1_QueenslandChildrensHospital16.png" /></td><td>Queensland Children\'s Hospital</td></tr><tr><td style="text-align: center;"><img src="legend/Catchment_1_RoyalAdelaideHospital17.png" /></td><td>Royal Adelaide Hospital</td></tr><tr><td style="text-align: center;"><img src="legend/Catchment_1_RoyalBrisbaneWomensHospital18.png" /></td><td>Royal Brisbane & Women\'s Hospital</td></tr><tr><td style="text-align: center;"><img src="legend/Catchment_1_RoyalChildrensHospitalParkville19.png" /></td><td>Royal Children\'s Hospital [Parkville]</td></tr><tr><td style="text-align: center;"><img src="legend/Catchment_1_RoyalDarwinHospital20.png" /></td><td>Royal Darwin Hospital</td></tr><tr><td style="text-align: center;"><img src="legend/Catchment_1_RoyalHobartHospital21.png" /></td><td>Royal Hobart Hospital</td></tr><tr><td style="text-align: center;"><img src="legend/Catchment_1_RoyalMelbourneHospitalCityCampus22.png" /></td><td>Royal Melbourne Hospital [City Campus]</td></tr><tr><td style="text-align: center;"><img src="legend/Catchment_1_RoyalNorthShoreHospital23.png" /></td><td>Royal North Shore Hospital</td></tr><tr><td style="text-align: center;"><img src="legend/Catchment_1_RoyalPrinceAlfredHospital24.png" /></td><td>Royal Prince Alfred Hospital</td></tr><tr><td style="text-align: center;"><img src="legend/Catchment_1_SirCharlesGairdnerHospital25.png" /></td><td>Sir Charles Gairdner Hospital</td></tr><tr><td style="text-align: center;"><img src="legend/Catchment_1_StGeorgeHospitalNSW26.png" /></td><td>St George Hospital NSW</td></tr><tr><td style="text-align: center;"><img src="legend/Catchment_1_StVincentsHospitalDarlinghurst27.png" /></td><td>St Vincent\'s Hospital [Darlinghurst]</td></tr><tr><td style="text-align: center;"><img src="legend/Catchment_1_StVincentsHospitalMelbourne28.png" /></td><td>St Vincent\'s Hospital [Melbourne]</td></tr><tr><td style="text-align: center;"><img src="legend/Catchment_1_SunshineHospital29.png" /></td><td>Sunshine Hospital</td></tr><tr><td style="text-align: center;"><img src="legend/Catchment_1_SydneyChildrensHospital30.png" /></td><td>Sydney Children\'s Hospital</td></tr><tr><td style="text-align: center;"><img src="legend/Catchment_1_TheAlfred31.png" /></td><td>The Alfred</td></tr><tr><td style="text-align: center;"><img src="legend/Catchment_1_TheCanberraHospital32.png" /></td><td>The Canberra Hospital</td></tr><tr><td style="text-align: center;"><img src="legend/Catchment_1_TheChildrensHospitalatWestmead33.png" /></td><td>The Children\'s Hospital at Westmead</td></tr><tr><td style="text-align: center;"><img src="legend/Catchment_1_TownsvilleUniversityHospital34.png" /></td><td>Townsville University Hospital</td></tr><tr><td style="text-align: center;"><img src="legend/Catchment_1_UniversityHospitalGeelong35.png" /></td><td>University Hospital Geelong</td></tr><tr><td style="text-align: center;"><img src="legend/Catchment_1_WestmeadHospital36.png" /></td><td>Westmead Hospital</td></tr><tr><td style="text-align: center;"><img src="legend/Catchment_1_WollongongHospital37.png" /></td><td>Wollongong Hospital</td></tr><tr><td style="text-align: center;"><img src="legend/Catchment_1_WomensandChildrensHospital38.png" /></td><td>Women\'s and Children\'s Hospital</td></tr><tr><td style="text-align: center;"><img src="legend/Catchment_1_39.png" /></td><td></td></tr></table>', layer: layer_Catchment_1},
+            {label: "light carto", layer: layer_lightcarto_0},]
+        var lay = L.control.layers.tree(null, overlaysTree,{
+            //namedToggle: true,
+            //selectorBack: false,
+            //closedSymbol: '&#8862; &#x1f5c0;',
+            //openedSymbol: '&#8863; &#x1f5c1;',
+            //collapseAll: 'Collapse all',
+            //expandAll: 'Expand all',
+            collapsed: true,
+        });
+        lay.addTo(map);
+        setBounds();
+        map.addControl(new L.Control.Search({
+            layer: layer_Catchment_1,
+            initial: false,
+            hideMarkerOnCollapse: true,
+            propertyName: 'hosp_name'}));
+        document.getElementsByClassName('search-button')[0].className +=
+         ' fa fa-binoculars';
+        var mapDiv = document.getElementById('map');
+        var row = document.createElement('div');
+        row.className="row";
+        row.id="all";
+        row.style.height = "100%";
+        var col1 = document.createElement('div');
+        col1.className="col9";
+        col1.id = "mapWindow";
+        col1.style.height = "99%";
+        col1.style.width = "80%";
+        col1.style.display = "inline-block";
+        var col2 = document.createElement('div');
+        col2.className="col3";
+        col2.id = "menu";
+        col2.style.display = "inline-block";
+        mapDiv.parentNode.insertBefore(row, mapDiv);
+        document.getElementById("all").appendChild(col1);
+        document.getElementById("all").appendChild(col2);
+        col1.appendChild(mapDiv)
+        var Filters = {"hosp_name": "str"};
+        function filterFunc() {
+          map.eachLayer(function(lyr){
+          if ("options" in lyr && "dataVar" in lyr["options"]){
+            features = this[lyr["options"]["dataVar"]].features.slice(0);
+            try{
+              for (key in Filters){
+                keyS = key.replace(/[^a-zA-Z0-9_]/g, "")
+                if (Filters[key] == "str" || Filters[key] == "bool"){
+                  var selection = [];
+                  var options = document.getElementById("sel_" + keyS).options
+                  for (var i=0; i < options.length; i++) {
+                    if (options[i].selected) selection.push(options[i].value);
+                  }
+                    try{
+                      if (key in features[0].properties){
+                        for (i = features.length - 1;
+                          i >= 0; --i){
+                          if (selection.indexOf(
+                          features[i].properties[key])<0
+                          && selection.length>0) {
+                          features.splice(i,1);
+                          }
+                        }
+                      }
+                    } catch(err){
+                  }
+                }
+                if (Filters[key] == "int"){
+                  sliderVals =  document.getElementById(
+                    "div_" + keyS).noUiSlider.get();
+                  try{
+                    if (key in features[0].properties){
+                    for (i = features.length - 1; i >= 0; --i){
+                      if (parseInt(features[i].properties[key])
+                          < sliderVals[0]
+                          || parseInt(features[i].properties[key])
+                          > sliderVals[1]){
+                            features.splice(i,1);
+                          }
+                        }
+                      }
+                    } catch(err){
+                    }
+                  }
+                if (Filters[key] == "real"){
+                  sliderVals =  document.getElementById(
+                    "div_" + keyS).noUiSlider.get();
+                  try{
+                    if (key in features[0].properties){
+                    for (i = features.length - 1; i >= 0; --i){
+                      if (features[i].properties[key]
+                          < sliderVals[0]
+                          || features[i].properties[key]
+                          > sliderVals[1]){
+                            features.splice(i,1);
+                          }
+                        }
+                      }
+                    } catch(err){
+                    }
+                  }
+                if (Filters[key] == "date"
+                  || Filters[key] == "datetime"
+                  || Filters[key] == "time"){
+                  try{
+                    if (key in features[0].properties){
+                      HTMLkey = key.replace(/[&\/\\#,+()$~%.'":*?<>{} ]/g, '');
+                      startdate = document.getElementById("dat_" +
+                        HTMLkey + "_date1").value.replace(" ", "T");
+                      enddate = document.getElementById("dat_" +
+                        HTMLkey + "_date2").value.replace(" ", "T");
+                      for (i = features.length - 1; i >= 0; --i){
+                        if (features[i].properties[key] < startdate
+                          || features[i].properties[key] > enddate){
+                          features.splice(i,1);
+                        }
+                      }
+                    }
+                  } catch(err){
+                  }
+                }
+              }
+            } catch(err){
+            }
+          this[lyr["options"]["layerName"]].clearLayers();
+          this[lyr["options"]["layerName"]].addData(features);
+          }
+          })
+        }
+            document.getElementById("menu").appendChild(
+                document.createElement("div"));
+            var div_hosp_name = document.createElement('div');
+            div_hosp_name.id = "div_hosp_name";
+            div_hosp_name.className= "filterselect";
+            document.getElementById("menu").appendChild(div_hosp_name);
+            sel_hosp_name = document.createElement('select');
+            sel_hosp_name.multiple = true;
+            sel_hosp_name.size = 10;
+            sel_hosp_name.id = "sel_hosp_name";
+            var hosp_name_options_str = "<option value='' unselected></option>";
+            sel_hosp_name.onchange = function(){filterFunc()};
+            hosp_name_options_str  += '<option value="Alice Springs Hospital">Alice Springs Hospital</option>';
+            hosp_name_options_str  += '<option value="Austin Hospital [Heidelberg]">Austin Hospital [Heidelberg]</option>';
+            hosp_name_options_str  += '<option value="Bankstown Lidcombe Hospital">Bankstown Lidcombe Hospital</option>';
+            hosp_name_options_str  += '<option value="Concord Repatriation Hospital">Concord Repatriation Hospital</option>';
+            hosp_name_options_str  += '<option value="Dandenong Hospital">Dandenong Hospital</option>';
+            hosp_name_options_str  += '<option value="Fiona Stanley Hospital">Fiona Stanley Hospital</option>';
+            hosp_name_options_str  += '<option value="Flinders Medical Centre">Flinders Medical Centre</option>';
+            hosp_name_options_str  += '<option value="Gold Coast University Hospital">Gold Coast University Hospital</option>';
+            hosp_name_options_str  += '<option value="John Hunter Hospital">John Hunter Hospital</option>';
+            hosp_name_options_str  += '<option value="Liverpool Hospital">Liverpool Hospital</option>';
+            hosp_name_options_str  += '<option value="Lyell McEwin Hospital">Lyell McEwin Hospital</option>';
+            hosp_name_options_str  += '<option value="Monash Medical Centre [Clayton]">Monash Medical Centre [Clayton]</option>';
+            hosp_name_options_str  += '<option value="Nepean Hospital">Nepean Hospital</option>';
+            hosp_name_options_str  += '<option value="Perth Children&apos;s Hospital">Perth Children&apos;s Hospital</option>';
+            hosp_name_options_str  += '<option value="Prince of Wales Hospital">Prince of Wales Hospital</option>';
+            hosp_name_options_str  += '<option value="Princess Alexandra Hospital">Princess Alexandra Hospital</option>';
+            hosp_name_options_str  += '<option value="Queensland Children&apos;s Hospital">Queensland Children&apos;s Hospital</option>';
+            hosp_name_options_str  += '<option value="Royal Adelaide Hospital">Royal Adelaide Hospital</option>';
+            hosp_name_options_str  += '<option value="Royal Brisbane & Women&apos;s Hospital">Royal Brisbane & Women&apos;s Hospital</option>';
+            hosp_name_options_str  += '<option value="Royal Children&apos;s Hospital [Parkville]">Royal Children&apos;s Hospital [Parkville]</option>';
+            hosp_name_options_str  += '<option value="Royal Darwin Hospital">Royal Darwin Hospital</option>';
+            hosp_name_options_str  += '<option value="Royal Hobart Hospital">Royal Hobart Hospital</option>';
+            hosp_name_options_str  += '<option value="Royal Melbourne Hospital [City Campus]">Royal Melbourne Hospital [City Campus]</option>';
+            hosp_name_options_str  += '<option value="Royal North Shore Hospital">Royal North Shore Hospital</option>';
+            hosp_name_options_str  += '<option value="Royal Prince Alfred Hospital">Royal Prince Alfred Hospital</option>';
+            hosp_name_options_str  += '<option value="Sir Charles Gairdner Hospital">Sir Charles Gairdner Hospital</option>';
+            hosp_name_options_str  += '<option value="St George Hospital NSW">St George Hospital NSW</option>';
+            hosp_name_options_str  += '<option value="St Vincent&apos;s Hospital [Darlinghurst]">St Vincent&apos;s Hospital [Darlinghurst]</option>';
+            hosp_name_options_str  += '<option value="St Vincent&apos;s Hospital [Melbourne]">St Vincent&apos;s Hospital [Melbourne]</option>';
+            hosp_name_options_str  += '<option value="Sunshine Hospital">Sunshine Hospital</option>';
+            hosp_name_options_str  += '<option value="Sydney Children&apos;s Hospital">Sydney Children&apos;s Hospital</option>';
+            hosp_name_options_str  += '<option value="The Alfred">The Alfred</option>';
+            hosp_name_options_str  += '<option value="The Canberra Hospital">The Canberra Hospital</option>';
+            hosp_name_options_str  += '<option value="The Children&apos;s Hospital at Westmead">The Children&apos;s Hospital at Westmead</option>';
+            hosp_name_options_str  += '<option value="Townsville University Hospital">Townsville University Hospital</option>';
+            hosp_name_options_str  += '<option value="University Hospital Geelong">University Hospital Geelong</option>';
+            hosp_name_options_str  += '<option value="Westmead Hospital">Westmead Hospital</option>';
+            hosp_name_options_str  += '<option value="Wollongong Hospital">Wollongong Hospital</option>';
+            hosp_name_options_str  += '<option value="Women&apos;s and Children&apos;s Hospital">Women&apos;s and Children&apos;s Hospital</option>';
+            sel_hosp_name.innerHTML = hosp_name_options_str;
+            div_hosp_name.appendChild(sel_hosp_name);
+            var lab_hosp_name = document.createElement('div');
+            lab_hosp_name.innerHTML = 'hosp_name';
+            lab_hosp_name.className = 'filterlabel';
+            div_hosp_name.appendChild(lab_hosp_name);
+            var reset_hosp_name = document.createElement('div');
+            reset_hosp_name.innerHTML = 'clear filter';
+            reset_hosp_name.className = 'filterlabel';
+            reset_hosp_name.onclick = function() {
+                var options = document.getElementById("sel_hosp_name").options;
+                for (var i=0; i < options.length; i++) {
+                    options[i].selected = false;
+                }
+                filterFunc();
+            };
+            div_hosp_name.appendChild(reset_hosp_name);
+        </script>
+    </body>
+</html>
