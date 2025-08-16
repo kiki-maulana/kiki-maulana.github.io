@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>OTP Trip Planner</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link
+    rel="stylesheet"
+    href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+  />
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <style>
+    #map { height: 300px; margin-top: 20px; }
+    body { font-family: Arial; max-width: 800px; margin: auto; padding: 20px; }
+    input, select, button { margin: 5px 0; width: 100%; padding: 8px; }
+    pre { background: #eee; padding: 10px; overflow: auto; max-height: 300px; }
+  </style>
+</head>
+<body>
+  <h2>OpenTripPlanner - Simple JS App</h2>
+
+  <label for="state">Select State</label>
+  <select id="state">
+    <option value="vic">VIC</option>
+    <option value="nsw">NSW</option>
+    <option value="qld">QLD</option>
+  </select>
+
+  <label>Journey Date</label>
+  <input type="date" id="date" value="2025-03-01">
+
+  <label>Journey Time</label>
+  <input type="time" id="time" value="08:00">
+
+  <label>Origin Latitude</label>
+  <input type="text" id="origLat" placeholder="e.g. -37.8136">
+
+  <label>Origin Longitude</label>
+  <input type="text" id="origLon" placeholder="e.g. 144.9631">
+
+  <label>Destination Latitude</label>
+  <input type="text" id="destLat" placeholder="e.g. -37.8184">
+
+  <label>Destination Longitude</label>
+  <input type="text" id="destLon" placeholder="e.g. 144.9671">
+
+  <button onclick="planTrip()">Plan Trip</button>
+
+  <div id="map"></div>
+
+  <h3>Trip Summary</h3>
+  <div id="summary"></div>
+
+  <h3>Raw JSON Response</h3>
+  <pre id="jsonOutput"></pre>
+
+  <script>
+    let map;
+    function planTrip() {
+      const state = document.getElementById('state').value;
+      const date = document.getElementById('date').value;
+      const time = document.getElementById('time').value;
+      const fromPlace = `${document.getElementById('origLat').value},${document.getElementById('origLon').value}`;
+      const toPlace = `${document.getElementById('destLat').value},${document.getElementById('destLon').value}`;
+
+      const url = `https://ptplanner.latrobe.edu.au/${state}/otp/routers/default/plan` +
+        `?fromPlace=${fromPlace}&toPlace=${toPlace}&time=${time}&date=${date}` +
+        `&mode=TRANSIT,WALK&numItineraries=1`;
+
+      fetch(url)
+        .then(res => res.json())
+        .then(data => {
+          document.getElementById('jsonOutput').textContent = JSON.stringify(data, null, 2);
+
+          const itin = data.plan.itineraries[0];
+          const tripLengthKm = (itin.distance / 1000).toFixed(2);
+          const tripTimeMin = Math.round(itin.duration / 60);
+          const walkDistanceKm = (itin.walkDistance / 1000).toFixed(2);
+
+          const transfers = itin.transfers;
+          const routes = itin.legs
+            .filter(leg => leg.mode !== 'WALK')
+            .map(leg => `${leg.mode} (${leg.route})`).join(', ');
+
+          const waitTimeMin = itin.legs
+            .map(leg => leg.waitingTime || 0)
+            .reduce((a, b) => a + b, 0) / 60;
+
+          document.getElementById('summary').innerHTML = `
+            <strong>Trip Distance:</strong> ${tripLengthKm} km<br>
+            <strong>Trip Duration:</strong> ${tripTimeMin} minutes<br>
+            <strong>Number of Transfers:</strong> ${transfers}<br>
+            <strong>Public Transport Routes:</strong> ${routes}<br>
+            <strong>Walking Distance:</strong> ${walkDistanceKm} km<br>
+            <strong>Total Waiting Time:</strong> ${waitTimeMin.toFixed(1)} minutes
+          `;
+
+          // Draw map
+          if (!map) {
+            map = L.map('map').setView([document.getElementById('origLat').value, document.getElementById('origLon').value], 13);
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
+          }
+          map.eachLayer(layer => {
+            if (layer instanceof L.Polyline || layer instanceof L.Marker) map.removeLayer(layer;
+          });
+
+          // Plot legs
+          itin.legs.forEach(leg => {
+            const coords = leg.legGeometry.points;
+            const decoded = decodePolyline(coords);
+            const latlngs = decoded.map(pt => [pt.lat, pt.lng]);
+            L.polyline(latlngs, { color: leg.mode === 'WALK' ? 'gray' : 'blue' }).addTo(map);
+          });
+
+          const from = fromPlace.split(',').map(Number);
+          const to = toPlace.split(',').map(Number);
+          L.marker(from).addTo(map).bindPopup("Origin").openPopup();
+          L.marker(to).addTo(map).bindPopup("Destination");
+        });
+    }
+
+    // Decode polyline from OTP format (Google's polyline algorithm)
+    function decodePolyline(encoded) {
+      let index = 0, lat = 0, lng = 0, coordinates = [];
+      while (index < encoded.length) {
+        let b, shift = 0, result = 0;
+        do {
+          b = encoded.charCodeAt(index++) - 63;
+          result |= (b & 0x1f) << shift;
+          shift += 5;
+        } while (b >= 0x20);
+        const dlat = (result & 1) ? ~(result >> 1) : (result >> 1);
+        lat += dlat;
+
+        shift = 0;
+        result = 0;
+        do {
+          b = encoded.charCodeAt(index++) - 63;
+          result |= (b & 0x1f) << shift;
+          shift += 5;
+        } while (b >= 0x20);
+        const dlng = (result & 1) ? ~(result >> 1) : (result >> 1);
+        lng += dlng;
+
+        coordinates.push({ lat: lat / 1e5, lng: lng / 1e5 });
+      }
+      return coordinates;
+    }
+  </script>
+</body>
+</html>
