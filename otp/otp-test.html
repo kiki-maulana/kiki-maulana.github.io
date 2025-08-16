@@ -27,7 +27,7 @@
   </select>
 
   <label>Journey Date</label>
-  <input type="date" id="date" value="2025-03-01">
+  <input type="date" id="date" value="2025-04-24">
 
   <label>Journey Time</label>
   <input type="time" id="time" value="08:00">
@@ -63,7 +63,7 @@
       const fromPlace = `${document.getElementById('origLat').value},${document.getElementById('origLon').value}`;
       const toPlace = `${document.getElementById('destLat').value},${document.getElementById('destLon').value}`;
 
-      const url = `https://ptplanner.latrobe.edu.au/${state}/otp/routers/default/plan` +
+      const url = `https://ptplanner.latrobe.edu.au/otp/routers/${state}/plan` +
         `?fromPlace=${fromPlace}&toPlace=${toPlace}&time=${time}&date=${date}` +
         `&mode=TRANSIT,WALK&numItineraries=1`;
 
@@ -101,7 +101,7 @@
             L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
           }
           map.eachLayer(layer => {
-            if (layer instanceof L.Polyline || layer instanceof L.Marker) map.removeLayer(layer;
+            if (layer instanceof L.Polyline || layer instanceof L.Marker) map.removeLayer(layer);
           });
 
           // Plot legs
