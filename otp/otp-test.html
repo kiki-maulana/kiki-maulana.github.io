@@ -27,22 +27,22 @@
   </select>
 
   <label>Journey Date</label>
-  <input type="date" id="date" value="2025-04-01">
+  <input type="date" id="date" value="2025-04-24">
 
   <label>Journey Time</label>
   <input type="time" id="time" value="08:00">
 
   <label>Origin Latitude</label>
-  <input type="text" id="origLat" placeholder="e.g. -37.8136">
+  <input type="text" id="origLat" placeholder="e.g. -37.8136" value="-37.8103528">
 
   <label>Origin Longitude</label>
-  <input type="text" id="origLon" placeholder="e.g. 144.9631">
+  <input type="text" id="origLon" placeholder="e.g. 144.9631" value="144.9633012">
 
   <label>Destination Latitude</label>
-  <input type="text" id="destLat" placeholder="e.g. -37.8184">
+  <input type="text" id="destLat" placeholder="e.g. -37.8184" value="-37.7208129">
 
   <label>Destination Longitude</label>
-  <input type="text" id="destLon" placeholder="e.g. 144.9671">
+  <input type="text" id="destLon" placeholder="e.g. 144.9671" value="145.0473987">
 
   <button onclick="planTrip()">Plan Trip</button>
 
@@ -73,7 +73,10 @@
           document.getElementById('jsonOutput').textContent = JSON.stringify(data, null, 2);
 
           const itin = data.plan.itineraries[0];
-          const tripLengthKm = (itin.distance / 1000).toFixed(2);
+          const tripLengthKm = itin.legs
+            .map(leg => leg.distance || 0)
+            .reduce((a, b) => a + b, 0) / 1000;
+          const tripLengthKmFormatted = tripLengthKm.toFixed(2);
           const tripTimeMin = Math.round(itin.duration / 60);
           const walkDistanceKm = (itin.walkDistance / 1000).toFixed(2);
 
@@ -87,7 +90,7 @@
             .reduce((a, b) => a + b, 0) / 60;
 
           document.getElementById('summary').innerHTML = `
-            <strong>Trip Distance:</strong> ${tripLengthKm} km<br>
+            <strong>Trip Distance:</strong> ${tripLengthKmFormatted} km<br>
             <strong>Trip Duration:</strong> ${tripTimeMin} minutes<br>
             <strong>Number of Transfers:</strong> ${transfers}<br>
             <strong>Public Transport Routes:</strong> ${routes}<br>
@@ -147,5 +150,24 @@
       return coordinates;
     }
   </script>
+  <div>
+    The trip planner uses <a href="https://www.opentripplanner.org/" target="_blank">OpenTripPlanner</a> engine.<br>
+    The OTP engine can be accessed at <a href="https://ptplanner.latrobe.edu.au" target="_blank">https://ptplanner.latrobe.edu.au</a>
+    <br><br>
+    To get the JSON result, you can send http request using the following format:
+    <br>
+    https://ptplanner.latrobe.edu.au/otp/routers/<strong>{STATE_CODE}</strong>/plan?fromPlace=<strong>{lat,lon}</strong>&toPlace=<strong>{lat,lon}</strong>&date=<strong>{YYYY-MM-DD}</strong>&time=<strong>{HH24:MI}</strong>&mode=TRANSIT,WALK&numItineraries=1
+    <br><br>
+    The following example retrieve the trip plan from Melbourne Central to La Trobe University (Agora), on 1 April 2025 at 08:00
+    <br>
+    <a href="    https://ptplanner.latrobe.edu.au/otp/routers/vic/plan?fromPlace=-37.8103528,144.9633012&toPlace=-37.7208129,145.0473987&date=2025-04-01&time=08:00&mode=TRANSIT,WALK&numItineraries=1
+" target="_blank">https://ptplanner.latrobe.edu.au/otp/routers/vic/plan?fromPlace=-37.8103528,144.9633012&toPlace=-37.7208129,145.0473987&date=2025-04-01&time=08:00&mode=TRANSIT,WALK&numItineraries=1
+     </a>
+  </div>
+  <br>
+  <div>
+    If you have any issues, please send me a message to k.adhinugraha@latrobe.edu.au<br>
+    Last update on 16 August 2025
+  </div>
 </body>
 </html>
