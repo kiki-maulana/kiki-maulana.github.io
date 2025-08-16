@@ -149,7 +149,22 @@
       }
       return coordinates;
     }
+
+    function downloadJSON() {
+        const jsonText = document.getElementById('jsonOutput').textContent;
+        const blob = new Blob([jsonText], { type: 'application/json' });
+        const url = URL.createObjectURL(blob);
+
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = 'otp_trip_result.json';
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+    }
   </script>
+  <button onclick="downloadJSON()">Download JSON</button>
   <div>
     The trip planner uses <a href="https://www.opentripplanner.org/" target="_blank">OpenTripPlanner</a> engine.<br>
     The OTP engine can be accessed at <a href="https://ptplanner.latrobe.edu.au" target="_blank">https://ptplanner.latrobe.edu.au</a>
