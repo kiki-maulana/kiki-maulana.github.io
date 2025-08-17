@@ -22,7 +22,9 @@ Upload a CSV file (`|` pipe-delimited) with multiple trips to:
 - View raw OTP plan links used per trip
 
 Sample CSV format:
+
 trip_number|trip_state|origin|destination|trip_date|trip_time
+
 1|vic|(145.16087489,-37.96505585)|(145.15275541679594,-37.95154672537084)|2025-04-01|08:00
 
 ## 🧭 Hosting & API
