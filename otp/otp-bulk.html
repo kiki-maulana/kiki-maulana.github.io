@@ -147,7 +147,8 @@
           const modes = itin.legs.filter(l => l.mode !== 'WALK')
                                   .map(l => `${l.mode} (${l.route})`).join(', ');
           const walking = (itin.walkDistance / 1000).toFixed(2);
-          const waiting = (itin.legs.map(l => l.waitingTime || 0).reduce((a, b) => a + b, 0) / 60).toFixed(1);
+//          const waiting = (itin.legs.map(l => l.waitingTime || 0).reduce((a, b) => a + b, 0) / 60).toFixed(1); //issue with OTP 1.5.0
+          const waiting = (itin.waitingTime / 60).toFixed(1); //set as fixed
 
           addResultRow({ trip_number, state, distance, duration, transfers, modes, walking, waiting, status: 'success', link: url });
         })
