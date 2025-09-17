@@ -19,11 +19,16 @@
 <body>
   <h2>OpenTripPlanner - Simple JS App</h2>
 
-  <label for="state">Select State</label>
+  <label for="state">Select Metropolitan Area</label>
   <select id="state">
-    <option value="vic">VIC</option>
-    <option value="nsw">NSW</option>
-    <option value="qld">QLD</option>
+    <option value="vic">Melbourne</option>
+    <option value="nsw">Sydney</option>
+    <option value="qld">Brisbane</option>
+    <option value="wa">Perth</option>
+    <option value="sa">Adelaide</option>
+    <option value="nt">Darwin</option>
+    <option value="tas">Hobart</option>
+    <option value="act">Canberra</option>
   </select>
 
   <label>Journey Date</label>
@@ -171,18 +176,74 @@
     <br><br>
     To get the JSON result, you can send http request using the following format:
     <br>
-    https://ptplanner.latrobe.edu.au/otp/routers/<strong>{STATE_CODE}</strong>/plan?fromPlace=<strong>{lat,lon}</strong>&toPlace=<strong>{lat,lon}</strong>&date=<strong>{YYYY-MM-DD}</strong>&time=<strong>{HH24:MI}</strong>&mode=TRANSIT,WALK&numItineraries=1
+    https://ptplanner.latrobe.edu.au/otp/routers/<strong>{STATE_CODE}</strong>/plan?fromPlace=<strong>{lat,lon}</strong>&toPlace=<strong>{lat,lon}</strong>&date=<strong>{YYYY-MM-DD}</strong>&time=<strong>{HH24:MI}</strong>&mode=TRANSIT,WALK
     <br><br>
-    The following example retrieve the trip plan from Melbourne Central to La Trobe University (Agora), on 1 April 2025 at 08:00
-    <br>
-    <a href="    https://ptplanner.latrobe.edu.au/otp/routers/vic/plan?fromPlace=-37.8103528,144.9633012&toPlace=-37.7208129,145.0473987&date=2025-04-01&time=08:00&mode=TRANSIT,WALK&numItineraries=1
-" target="_blank">https://ptplanner.latrobe.edu.au/otp/routers/vic/plan?fromPlace=-37.8103528,144.9633012&toPlace=-37.7208129,145.0473987&date=2025-04-01&time=08:00&mode=TRANSIT,WALK&numItineraries=1
-     </a>
+  </div>
+  <div>
+    The following table contains examples trips in all states. The trips are conducted on 17 September 2025 at 8 AM.
+    <table border="1" cellpadding="5" cellspacing="0">
+      <tr>
+        <th>City</th>
+        <th>From - To</th>
+        <th>JSON URL</th>
+        <th>MAP</th>
+      </tr>
+      <tr>
+        <td>Melbourne</td>
+        <td>Flinder station - La Trobe University</td>
+        <td><a href="https://ptplanner.latrobe.edu.au/otp/routers/vic/plan?route=vic&fromPlace=-37.8183,144.9671&toPlace=-37.7215,145.0470&mode=TRANSIT,WALK&date=2025-09-17&time=08:00am" target="_blank">link</a></td>
+        <td><a href="map_viewer2.html?route=vic&fromPlace=-37.8183,144.9671&toPlace=-37.7215,145.0470&mode=TRANSIT,WALK&date=2025-09-17&time=08:00am" target="_blank">link</a></td>
+      </tr>
+      <tr>
+        <td>Sydney</td>
+        <td>Central station - Western Sydney University</td>
+        <td><a href="https://ptplanner.latrobe.edu.au/otp/routers/nsw/plan?fromPlace=-33.8830,151.2070&toPlace=-33.8153,151.0032&mode=TRANSIT,WALK&date=2025-09-17&time=08:00am" target="_blank">link</a></td>
+        <td><a href="map_viewer2.html?route=nsw&fromPlace=-33.8830,151.2070&toPlace=-33.8153,151.0032&mode=TRANSIT,WALK&date=2025-09-17&time=08:00am" target="_blank">link</a></td>
+      </tr>
+      <tr>
+        <td>Brisbane</td>
+        <td>Roma Street Station - Griffith University</td>
+        <td><a href="https://ptplanner.latrobe.edu.au/otp/routers/qld/plan?fromPlace=-27.4661,153.0168&toPlace=-27.5502,153.0622&mode=TRANSIT,WALK&date=2025-09-17&time=08:00am" target="_blank">link</a></td>
+        <td><a href="map_viewer2.html?route=qld&fromPlace=-27.4661,153.0168&toPlace=-27.5502,153.0622&mode=TRANSIT,WALK&date=2025-09-17&time=08:00am" target="_blank">link</a></td>
+      </tr>
+      <tr>
+        <td>Perth</td>
+        <td>Perth Station - Curtin University</td>
+        <td><a href="https://ptplanner.latrobe.edu.au/otp/routers/wa/plan?fromPlace=-31.9505,115.8605&toPlace=-32.0038,115.8944&mode=TRANSIT,WALK&date=2025-09-17&time=08:00am" target="_blank">link</a></td>
+        <td><a href="map_viewer2.html?route=wa&fromPlace=-31.9505,115.8605&toPlace=-32.0038,115.8944&mode=TRANSIT,WALK&date=2025-09-17&time=08:00am" target="_blank">link</a></td>
+      </tr>
+      <tr>
+        <td>Adelaide</td>
+        <td>Adelaide Station - Flinders University</td>
+        <td><a href="https://ptplanner.latrobe.edu.au/otp/routers/sa/plan?fromPlace=-34.9187,138.5955&toPlace=-35.0184,138.5671&mode=TRANSIT,WALK&date=2025-09-17&time=08:00am" target="_blank">link</a></td>
+        <td><a href="map_viewer2.html?route=sa&fromPlace=-34.9187,138.5955&toPlace=-35.0184,138.5671&mode=TRANSIT,WALK&date=2025-09-17&time=08:00am" target="_blank">link</a></td>
+      </tr>
+      <tr>
+        <td>Darwin</td>
+        <td>Darwin Bus Interchange - Charles Darwin University</td>
+        <td><a href="https://ptplanner.latrobe.edu.au/otp/routers/nt/plan?fromPlace=-12.4613,130.8419&toPlace=-12.3706,130.8691&mode=TRANSIT,WALK&date=2025-09-17&time=08:00am" target="_blank">link</a></td>
+        <td><a href="map_viewer2.html?route=nt&fromPlace=-12.4613,130.8419&toPlace=-12.3706,130.8691&mode=TRANSIT,WALK&date=2025-09-17&time=08:00am" target="_blank">link</a></td>
+      </tr>
+      <tr>
+        <td>Hobart</td>
+        <td>Hobart City Interchange - University of Tasmania</td>
+        <td><a href="https://ptplanner.latrobe.edu.au/otp/routers/tas/plan?fromPlace=-42.8810,147.3270&toPlace=-42.9091,147.3247&mode=TRANSIT,WALK&date=2025-09-17&time=08:00am" target="_blank">link</a></td>
+        <td><a href="map_viewer2.html?route=tas&fromPlace=-42.8810,147.3270&toPlace=-42.9091,147.3247&mode=TRANSIT,WALK&date=2025-09-17&time=08:00am" target="_blank">link</a></td>
+      </tr>
+      <tr>
+        <td>Canberra</td>
+        <td>City Interchange - University of Canberra</td>
+        <td><a href="https://ptplanner.latrobe.edu.au/otp/routers/act/plan?fromPlace=-35.2784,149.1291&toPlace=-35.2371,149.0845&mode=TRANSIT,WALK&date=2025-09-17&time=08:00am" target="_blank">link</a></td>
+        <td><a href="map_viewer2.html?route=act&fromPlace=-35.2784,149.1291&toPlace=-35.2371,149.0845&mode=TRANSIT,WALK&date=2025-09-17&time=08:00am" target="_blank">link</a></td>
+      </tr>
+      </table>      
   </div>
   <br>
+  <div>
 <p style="margin-top:40px; font-size: 0.9em; color: #888;">
   Built by <strong>Kiki Adhinugraha</strong> using OpenTripPlanner. UI enhancements assisted by ChatGPT.
   <br> Please report issues to k.adhinugraha@latrobe.edu.au
 </p>
+</div>
 </body>
 </html>
