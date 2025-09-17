@@ -86,6 +86,7 @@
       const tbody = document.querySelector('#csvPreview tbody');
       const headers = Object.keys(data[0]);
 
+      // Header
       const headerRow = document.createElement('tr');
       headers.forEach(h => {
         const th = document.createElement('th');
@@ -94,6 +95,7 @@
       });
       thead.appendChild(headerRow);
 
+      // Rows
       data.forEach(row => {
         const tr = document.createElement('tr');
         headers.forEach(h => {
@@ -121,13 +123,13 @@
         return;
       }
 
-      function reverseCoord(coordStr) {
+        function reverseCoord(coordStr) {
         const [lon, lat] = coordStr.replace(/[()]/g, '').split(',');
-        return `${lat.trim()},${lon.trim()}`; // lat,lon
-      }
+        return `${lat.trim()},${lon.trim()}`; // ← lat,lon
+        }
 
-      const from = reverseCoord(origin);
-      const to = reverseCoord(destination);
+        const from = reverseCoord(origin);
+        const to = reverseCoord(destination);
 
       const url = `https://ptplanner.latrobe.edu.au/otp/routers/${state}/plan` +
                   `?fromPlace=${from}&toPlace=${to}&date=${date}&time=${time}` +
@@ -145,12 +147,7 @@
           const modes = itin.legs.filter(l => l.mode !== 'WALK')
                                   .map(l => `${l.mode} (${l.route})`).join(', ');
           const walking = (itin.walkDistance / 1000).toFixed(2);
-          const waiting = (
-            itin.legs
-              .slice(1) // ignore first leg
-              .map(l => l.waitingTime || 0)
-              .reduce((a, b) => a + b, 0) / 60
-          ).toFixed(1);
+          const waiting = (itin.legs.map(l => l.waitingTime || 0).reduce((a, b) => a + b, 0) / 60).toFixed(1);
 
           addResultRow({ trip_number, state, distance, duration, transfers, modes, walking, waiting, status: 'success', link: url });
         })
@@ -199,27 +196,28 @@
       document.body.removeChild(link);
     }
   </script>
-
   <div>
     <br>
-    Please note that the waiting time might not be reliable or accurate due to the unpredictable arrival of the first vehicle.
-    <br><br>
     OTP batch trip processor. Based on OpenTripPlanner.
-    <br><br>
-    The sample CSV file can be downloaded from the GitHub repository.
-    <br>CSV uses pipe (`|`) as the column delimiter.
-    <br><br>
-    Required headers:<br>
-    <strong>trip_num | trip_state | origin | destination | trip_date | trip_time</strong>
-    <br><br>
-    `trip_state` must be one of: `vic`, `nsw`, `qld`, etc.<br>
-    `origin` and `destination` format: (longitude,latitude)
-    <br><br>
-
-    <p style="margin-top:40px; font-size: 0.9em; color: #888;">
-      Built by <strong>Kiki Adhinugraha</strong> using OpenTripPlanner. UI enhancements assisted by ChatGPT.
-      <br> Please report issues to <a href="mailto:k.adhinugraha@latrobe.edu.au">k.adhinugraha@latrobe.edu.au</a>
-    </p>
+    <br>
+    <br>
+    The sample of CSV file can be downloaded in the github repository.
+    <br>The CSV file uses pipeline '|' as the column delimiter.
+    <br>The following header of CSV file is needed
+    <br>
+    <strong>trip_num|trip_state|origin |destination |trip_date |trip_time</strong>
+    <br>
+    <br>
+    trip_state can be vic, nsw, or qld
+    <br>
+    <br>
+    origin and destination format is (longitude,latitude)
+    <br>
+    <br>
+<p style="margin-top:40px; font-size: 0.9em; color: #888;">
+  Built by <strong>Kiki Adhinugraha</strong> using OpenTripPlanner. UI enhancements assisted by ChatGPT.
+  <br> Please report issues to k.adhinugraha@latrobe.edu.au
+</p>
   </div>
 </body>
 </html>
