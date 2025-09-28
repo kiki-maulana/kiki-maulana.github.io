@@ -67,6 +67,8 @@ The HTTP request can be accessed directly or sent from many scripting languages.
 | `otp_bulk_sample.csv` | Sample CSV input for batch testing |[link](https://kiki-maulana.github.io/otp/otp_bulk_sample.csv)|
 | `README.md` | This file |-|
 
+For the ptplanner configuration and dataset required for the service can be downloaded from [here](https://github.com/kiki-maulana/ptplanner.git)
+
 ## ✅ Requirements
 
 - Modern web browser (Chrome, Firefox, Edge)
