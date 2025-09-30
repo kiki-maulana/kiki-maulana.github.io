@@ -19,8 +19,9 @@ Back in the day where this freeway was not there, the Sydney road (also known as
 The Hume Historical Map will bring the viewer back in time in 1966 to observe the development of road infrastructure in one of the important municipality on the northern part of metropolitan Melbourne. 
 The audience will have capability to check the infrastrcture development from one period of time to another. 
 
-For further inquiry, contact [Assoc. Prof. David Taniar](mailto:david.taniar@monash.edu).
-
+For further inquiry, contact:
+ - [Assoc. Prof. David Taniar](mailto:david.taniar@monash.edu), Faculty of Information Technology, Monash University
+ - [Dr Kiki Adhinugraha](mailto:k.adhinugraha@latrobe.edu.au), Department of CSIT, La Trobe University
 
 
 Created by [k](mailto:k.adhinugraha@latrobe.edu.au) | [PondokIT](https://pondokit.com) | 2022
