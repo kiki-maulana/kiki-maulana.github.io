@@ -91,7 +91,9 @@ Contact: [k.adhinugraha@latrobe.edu.au](mailto:k.adhinugraha@latrobe.edu.au)
 - **CSV Parser**: [PapaParse](https://www.papaparse.com/)
 - **Frontend Support**: [ChatGPT (OpenAI)](https://openai.com/chatgpt)
 
-## 🐞 Report Issues
+## 🐞 Citation and Report Issues 
+To cite this work:
+Adhinugraha, K.; Gotoh, Y.; Taniar, D. An Open-Source System for Public Transport Route Data Curation Using OpenTripPlanner in Australia. Computers 2026, 15, 58. https://doi.org/10.3390/computers15010058
 
 If you encounter bugs or data issues, please contact:  
 📧 [k.adhinugraha@latrobe.edu.au](mailto:k.adhinugraha@latrobe.edu.au)
